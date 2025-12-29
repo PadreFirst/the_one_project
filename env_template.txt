@@ -1,0 +1,27 @@
+# ============================================
+# THE WORLD'S FRAME - Environment Variables
+# ============================================
+# Copy this file to .env and fill in your values
+
+# Telegram Bot Token (get from @BotFather)
+BOT_TOKEN=8580342687:AAG_pVJZQQ93LcZ7D-NsYAyoe3yaZ8K2NKk
+
+# Google Gemini API Key (get from https://makersuite.google.com/app/apikey)
+GOOGLE_API_KEY=AIzaSyDBsgvbyZmVP2ubqIxn55LTxztAg9k2HqA
+
+# Telegram Channel ID (must start with @)
+CHANNEL_ID=@the_worlds_frame
+
+# Mini App URL (Cloudflare Tunnel URL)
+WEBAPP_URL=https://setup-holes-blocking-ferrari.trycloudflare.com
+
+# Admin Password for /admin command (CHANGE THIS!)
+ADMIN_PASSWORD=change_me_to_secure_password
+
+# ============================================
+# IMPORTANT NOTES:
+# - Never commit this file to Git!
+# - Change ADMIN_PASSWORD to something secure
+# - WEBAPP_URL should match your Cloudflare tunnel
+# ============================================
+

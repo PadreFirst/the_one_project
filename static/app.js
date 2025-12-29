@@ -150,19 +150,33 @@ document.getElementById('dethroneBtn').addEventListener('click', () => {
 
 // Share button handler
 document.getElementById('shareBtn').addEventListener('click', () => {
-    const kingName = currentKingData?.user_link || 'Unclaimed';
-    const price = currentKingData?.simulated_price || 1;
+    if (!currentKingData) {
+        tg.showAlert('Loading data, please wait...');
+        return;
+    }
+
+    const kingName = currentKingData.user_link && currentKingData.user_link !== 'Anonymous' 
+        ? currentKingData.user_link 
+        : 'someone';
+    const price = currentKingData.simulated_price || 1;
+    const kingText = currentKingData.text && currentKingData.text.trim() !== '' 
+        ? `\n\n💬 "${currentKingData.text}"\n` 
+        : '';
     
-    // Viral share text
+    // Улучшенный вирусный текст с контекстом
     const shareText = 
-        `👑 THE WORLD'S FRAME\n\n` +
-        `One photo. One message. Only ONE person in the world.\n\n` +
-        `Current holder: ${kingName}\n` +
-        `Throne price: ${price} ⭐ Stars\n\n` +
-        `Can you take their place?`;
+        `🔥 THE WORLD'S FRAME\n\n` +
+        `One photo. One message. One throne.\n` +
+        `Only ONE person in the world can hold it.\n\n` +
+        `👑 Currently held by ${kingName}\n` +
+        `💰 For ${price} ⭐ Stars` +
+        kingText +
+        `\n\n🎯 Think you can take their place?\n` +
+        `The world is watching.`;
     
     const shareUrl = 'https://t.me/the_worlds_frame_bot/app';
     
+    // Используем Telegram Share API
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`);
 });
 

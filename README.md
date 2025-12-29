@@ -5,10 +5,13 @@
 ## 🎮 Game Concept
 
 1. **Pay to Win**: Users pay Telegram Stars (XTR) to become the current King
-2. **Upload Photo**: After payment, upload a photo that represents you
-3. **AI Moderation**: All photos are checked by Google Gemini AI for prohibited content
-4. **Price Growth**: Each new king pays 10% more than the previous one
-5. **Hall of Fame**: Top 10 biggest spenders are immortalized
+2. **Multipliers**: Choose 1x (standard), 10x (boost), or 100x (VIP) entry
+3. **Upload Photo**: After payment, upload a photo that represents you
+4. **Add Caption**: Include a message (up to 100 chars) with clickable links
+5. **AI Moderation**: All photos are checked by Google Gemini AI for prohibited content
+6. **Privacy Options**: Choose to show your @username or stay anonymous
+7. **Hall of Fame**: Top 10 highest payers are immortalized
+8. **Admin Panel**: Secure admin access for moderation and rollback
 
 ## 🛠 Tech Stack
 
@@ -17,6 +20,22 @@
 - **Database**: SQLite (aiosqlite)
 - **AI**: Google Gemini API (content moderation)
 - **Payments**: Telegram Stars (XTR)
+- **Deployment**: Cloudflare Tunnel, systemd, Nginx
+
+## ✨ Key Features
+
+### For Users:
+- 🎯 **Multipliers**: Pay 1x, 10x, or 100x to boost your rank
+- 💬 **Custom Captions**: Add text with clickable links (perfect for brands!)
+- 🔒 **Privacy Options**: Show your @username or stay anonymous
+- 🏆 **Hall of Fame**: Top 10 highest payers displayed prominently
+- 🔄 **Share Button**: Viral sharing with context (current King's photo & message)
+
+### For Admins:
+- 🔐 **Admin Panel**: Secure `/admin` command with password
+- 📊 **View History**: See last 10 entries with full details
+- ↩️ **Rollback**: Undo last entry if AI moderation failed
+- 🚫 **Block Users**: Prevent specific users from participating
 
 ## 📁 Project Structure
 
@@ -43,7 +62,7 @@ pip install -r requirements.txt
 ```
 
 ### 2. Configure Environment Variables
-Create `.env` file (copy from `.env.example`):
+Create `.env` file (use `env_template.txt` as reference):
 ```bash
 # Telegram Bot Token (from @BotFather)
 BOT_TOKEN=your_bot_token_here
@@ -51,11 +70,14 @@ BOT_TOKEN=your_bot_token_here
 # Google AI API Key (from https://makersuite.google.com/app/apikey)
 GOOGLE_API_KEY=your_google_api_key_here
 
-# Telegram Channel ID (for posting winners, format: -1001234567890)
-CHANNEL_ID=your_channel_id_here
+# Telegram Channel ID (for posting winners, format: @channel_name)
+CHANNEL_ID=@your_channel_name
 
-# Mini App URL (use ngrok during development)
-WEBAPP_URL=https://your-ngrok-url.ngrok.io
+# Mini App URL (Cloudflare Tunnel or your domain)
+WEBAPP_URL=https://your-cloudflare-tunnel.trycloudflare.com
+
+# Admin Password for /admin command (change to something secure!)
+ADMIN_PASSWORD=your_secure_password_here
 ```
 
 ### 3. Setup Telegram Channel

@@ -4,7 +4,7 @@ import os
 DB_NAME = "game_database.db"
 
 async def init_db():
-    """Создает таблицу, если её нет, и добавляет первую запись"""
+    """Создает таблицы, если их нет, и добавляет первую запись"""
     async with aiosqlite.connect(DB_NAME) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS game_state (
@@ -15,6 +15,15 @@ async def init_db():
                 text TEXT,
                 user_link TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Таблица для блокировки пользователей
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS blocked_users (
+                user_id INTEGER PRIMARY KEY,
+                blocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                reason TEXT
             )
         """)
         
@@ -116,3 +125,57 @@ def get_hall_of_fame_sync(limit=10):
         }
         for row in rows
     ]
+
+# ============ ADMIN FUNCTIONS ============
+
+async def rollback_last_entry():
+    """Удаляет последнюю запись (откат)"""
+    async with aiosqlite.connect(DB_NAME) as db:
+        # Проверяем, есть ли больше одной записи
+        async with db.execute("SELECT COUNT(*) FROM game_state") as cursor:
+            count = await cursor.fetchone()
+            if count[0] <= 1:
+                return False  # Нельзя удалить последнюю (начальную) запись
+        
+        # Удаляем последнюю запись
+        await db.execute("DELETE FROM game_state WHERE id = (SELECT MAX(id) FROM game_state)")
+        await db.commit()
+        return True
+
+async def get_history(limit=10):
+    """Возвращает последние N записей для админа"""
+    async with aiosqlite.connect(DB_NAME) as db:
+        async with db.execute("""
+            SELECT id, user_id, user_link, current_price, text, created_at
+            FROM game_state
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,)) as cursor:
+            rows = await cursor.fetchall()
+            return [
+                {
+                    "id": row[0],
+                    "user_id": row[1],
+                    "user_link": row[2],
+                    "price": row[3],
+                    "text": row[4],
+                    "created_at": row[5]
+                }
+                for row in rows
+            ]
+
+async def block_user(user_id: int, reason: str = "Admin action"):
+    """Блокирует пользователя"""
+    async with aiosqlite.connect(DB_NAME) as db:
+        await db.execute("""
+            INSERT OR REPLACE INTO blocked_users (user_id, reason)
+            VALUES (?, ?)
+        """, (user_id, reason))
+        await db.commit()
+
+async def is_user_blocked(user_id: int) -> bool:
+    """Проверяет, заблокирован ли пользователь"""
+    async with aiosqlite.connect(DB_NAME) as db:
+        async with db.execute("SELECT user_id FROM blocked_users WHERE user_id = ?", (user_id,)) as cursor:
+            result = await cursor.fetchone()
+            return result is not None
