@@ -179,3 +179,18 @@ async def is_user_blocked(user_id: int) -> bool:
         async with db.execute("SELECT user_id FROM blocked_users WHERE user_id = ?", (user_id,)) as cursor:
             result = await cursor.fetchone()
             return result is not None
+
+async def reset_database():
+    """Очищает базу данных и создает начальную запись"""
+    async with aiosqlite.connect(DB_NAME) as db:
+        # Удаляем все записи кроме блокировок
+        await db.execute("DELETE FROM game_state")
+        
+        # Создаем начальную запись
+        await db.execute("""
+            INSERT INTO game_state (user_id, current_price, photo_id, text, user_link)
+            VALUES (0, 1, '', 'Throne awaits its first ruler', '')
+        """)
+        
+        await db.commit()
+        print("Database reset complete. Initial entry created.")

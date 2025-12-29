@@ -134,17 +134,31 @@ function displayHallOfFame(data) {
     container.innerHTML = html;
 }
 
-// Dethrone button handler
-document.getElementById('dethroneBtn').addEventListener('click', () => {
+// Multiplier button handlers
+document.getElementById('buyBtn1x').addEventListener('click', () => {
     if (!currentKingData) {
         tg.showAlert('Loading data, please wait...');
         return;
     }
+    tg.openTelegramLink('https://t.me/the_worlds_frame_bot?start=buy_1x');
+    tg.close();
+});
 
-    // Открываем бота с командой /buy
-    tg.openTelegramLink('https://t.me/the_worlds_frame_bot?start=buy');
-    
-    // Закрываем Mini App чтобы юзер сразу видел бота
+document.getElementById('buyBtn10x').addEventListener('click', () => {
+    if (!currentKingData) {
+        tg.showAlert('Loading data, please wait...');
+        return;
+    }
+    tg.openTelegramLink('https://t.me/the_worlds_frame_bot?start=buy_10x');
+    tg.close();
+});
+
+document.getElementById('buyBtn100x').addEventListener('click', () => {
+    if (!currentKingData) {
+        tg.showAlert('Loading data, please wait...');
+        return;
+    }
+    tg.openTelegramLink('https://t.me/the_worlds_frame_bot?start=buy_100x');
     tg.close();
 });
 

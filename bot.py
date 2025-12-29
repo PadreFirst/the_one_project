@@ -1,6 +1,7 @@
 import os
 import asyncio
 import logging
+import math
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
@@ -8,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from dotenv import load_dotenv
 
-from database import init_db, get_game_state, update_game_state, rollback_last_entry, get_history, block_user, is_user_blocked
+from database import init_db, get_game_state, update_game_state, rollback_last_entry, get_history, block_user, is_user_blocked, reset_database
 from ai_check import check_image
 
 logging.basicConfig(level=logging.INFO)
@@ -28,12 +29,20 @@ class GameStates(StatesGroup):
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
-    # Check if user came with deep link (e.g. /start buy)
+    # Check if user came with deep link (e.g. /start buy, /start buy_1x)
     args = message.text.split(maxsplit=1)
-    if len(args) > 1 and args[1] == "buy":
-        # User clicked "CLAIM THE THRONE" from Mini App
-        await cmd_buy(message)
-        return
+    if len(args) > 1:
+        param = args[1]
+        
+        # Handle buy commands from Mini App
+        if param == "buy":
+            await cmd_buy(message)
+            return
+        elif param in ["buy_1x", "buy_10x", "buy_100x"]:
+            # Extract multiplier from deep link
+            multiplier = int(param.split("_")[1].replace("x", ""))
+            await send_invoice_with_multiplier(message, multiplier)
+            return
     
     state = await get_game_state()
     # state = (current_price, current_king_id, photo_id, text, user_link)
@@ -78,22 +87,31 @@ async def cmd_buy(message: Message):
         reply_markup=keyboard
     )
 
-# Обработчики для множителей
+# Функция для отправки invoice с множителем
+async def send_invoice_with_multiplier(message: Message, multiplier: int):
+    """Отправляет invoice с указанным множителем"""
+    state = await get_game_state()
+    base_price = state[0]
+    
+    # Вычисляем финальную цену с множителем
+    final_price = base_price * multiplier
+    
+    await bot.send_invoice(
+        chat_id=message.from_user.id if hasattr(message, 'from_user') else message.chat.id,
+        title=f"The World's Frame ({multiplier}x)",
+        description=f"Become THE ONE. Base: {base_price} ⭐ × {multiplier} = {final_price} ⭐",
+        payload=f"king_buy_{multiplier}",
+        currency="XTR",
+        prices=[LabeledPrice(label=f"Throne Access {multiplier}x", amount=final_price)],
+        provider_token=""
+    )
+
+# Обработчики для множителей (из команды /buy)
 @dp.callback_query(F.data.in_(["buy_1", "buy_10", "buy_100"]))
 async def callback_buy_multiplier(callback: CallbackQuery):
     multiplier = int(callback.data.split("_")[1])
-    price_to_pay = 1 * multiplier  # TESTING: всегда 1 * multiplier Stars
-    
     await callback.answer()
-    await bot.send_invoice(
-        chat_id=callback.from_user.id,
-        title=f"The World's Frame ({multiplier}x)",
-        description=f"Become THE ONE. Multiplier: {multiplier}x = {price_to_pay} Stars",
-        payload=f"king_buy_{multiplier}",
-        currency="XTR",
-        prices=[LabeledPrice(label=f"Throne Access {multiplier}x", amount=price_to_pay)],
-        provider_token=""
-    )
+    await send_invoice_with_multiplier(callback.message, multiplier)
 
 @dp.pre_checkout_query()
 async def process_pre_checkout(pre_checkout_query: PreCheckoutQuery):
@@ -212,13 +230,16 @@ async def process_photo(message: Message, state: FSMContext):
     else:
         user_link = "Anonymous"  # Анонимный пользователь
     
+    # Вычисляем новую цену: текущая * 1.1 с округлением вверх
+    next_price = math.ceil(paid_amount * 1.1)
+    
     # Сохраняем в БД с текстом пользователя
     await update_game_state(
         user_id=message.from_user.id,
         photo_id=file_id,
         text=user_caption,  # Сохраняем текст пользователя
         user_link=user_link,
-        new_price=paid_amount
+        new_price=next_price  # Следующая цена с ростом 10%
     )
     
     # Формируем caption для канала с кликабельными ссылками
@@ -289,15 +310,41 @@ async def cmd_admin(message: Message, state: FSMContext):
 
 @dp.message(GameStates.waiting_for_admin_password)
 async def process_admin_password(message: Message, state: FSMContext):
-    """Проверка пароля админа"""
+    """Проверка пароля админа и выполнение действий"""
+    data = await state.get_data()
+    action = data.get("admin_action")
+    
     if message.text == ADMIN_PASSWORD:
+        # Если это действие reset_db или block
+        if action == "reset_db":
+            await reset_database()
+            await message.answer(
+                "✅ <b>Database Reset Complete</b>\n\n"
+                "All Hall of Fame entries have been deleted.\n"
+                "Initial entry created (price: 1 ⭐)",
+                parse_mode="HTML"
+            )
+            await state.clear()
+            return
+        elif action == "block":
+            # Ждем ввода user_id для блокировки
+            await message.answer(
+                "🚫 <b>Block User</b>\n\n"
+                "Send user ID to block (numeric):",
+                parse_mode="HTML"
+            )
+            # Не очищаем state, ждём ID
+            return
+        
+        # Обычный вход в админку
         await state.clear()
         await state.update_data(is_admin=True)
         
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📊 View History", callback_data="admin_history")],
             [InlineKeyboardButton(text="↩️ Rollback Last", callback_data="admin_rollback")],
-            [InlineKeyboardButton(text="🚫 Block User", callback_data="admin_block")]
+            [InlineKeyboardButton(text="🚫 Block User", callback_data="admin_block")],
+            [InlineKeyboardButton(text="🗑️ Reset Database", callback_data="admin_reset")]
         ])
         
         await message.answer(
@@ -357,6 +404,19 @@ async def callback_admin_block(callback: CallbackQuery, state: FSMContext):
     await state.set_state(GameStates.waiting_for_admin_password)  # Reusing state
     await state.update_data(admin_action="block")
 
+@dp.callback_query(F.data == "admin_reset")
+async def callback_admin_reset(callback: CallbackQuery, state: FSMContext):
+    """Запросить подтверждение для сброса базы"""
+    await callback.answer()
+    await state.set_state(GameStates.waiting_for_admin_password)
+    await state.update_data(admin_action="reset_db")
+    await callback.message.answer(
+        "⚠️ <b>Database Reset</b>\n\n"
+        "This will delete ALL Hall of Fame entries!\n\n"
+        "Enter admin password to confirm:",
+        parse_mode="HTML"
+    )
+
 # Обработчик для блокировки пользователя
 @dp.message(lambda message: message.text and message.text.isdigit())
 async def process_admin_block_user(message: Message, state: FSMContext):
@@ -376,6 +436,7 @@ async def process_admin_block_user(message: Message, state: FSMContext):
 async def check_if_blocked(user_id: int) -> bool:
     """Проверяет, заблокирован ли пользователь"""
     return await is_user_blocked(user_id)
+
 
 async def main():
     await init_db()
