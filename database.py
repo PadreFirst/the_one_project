@@ -194,3 +194,14 @@ async def reset_database():
         
         await db.commit()
         print("Database reset complete. Initial entry created.")
+
+async def set_base_price(new_price: int):
+    """Обновляет базовую цену для следующей покупки"""
+    async with aiosqlite.connect(DB_NAME) as db:
+        # Получаем последнюю запись
+        async with db.execute("SELECT id FROM game_state ORDER BY id DESC LIMIT 1") as cursor:
+            row = await cursor.fetchone()
+            if row:
+                # Обновляем current_price для следующего покупателя
+                await db.execute("UPDATE game_state SET current_price = ? WHERE id = ?", (new_price, row[0]))
+                await db.commit()

@@ -9,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from dotenv import load_dotenv
 
-from database import init_db, get_game_state, update_game_state, rollback_last_entry, get_history, block_user, is_user_blocked, reset_database
+from database import init_db, get_game_state, update_game_state, rollback_last_entry, get_history, block_user, is_user_blocked, reset_database, set_base_price
 from ai_check import check_image
 
 logging.basicConfig(level=logging.INFO)
@@ -233,14 +233,19 @@ async def process_photo(message: Message, state: FSMContext):
     # Вычисляем новую цену: текущая * 1.1 с округлением вверх
     next_price = math.ceil(paid_amount * 1.1)
     
-    # Сохраняем в БД с текстом пользователя
+    # Сохраняем в БД: current_price = то что заплатил пользователь (для Hall of Fame)
+    # А следующий King увидит next_price как базовую цену
     await update_game_state(
         user_id=message.from_user.id,
         photo_id=file_id,
-        text=user_caption,  # Сохраняем текст пользователя
+        text=user_caption,
         user_link=user_link,
-        new_price=next_price  # Следующая цена с ростом 10%
+        new_price=paid_amount  # Сохраняем то, что реально заплатили
     )
+    
+    # Обновляем базовую цену для следующего покупателя
+    from database import set_base_price
+    await set_base_price(next_price)
     
     # Формируем caption для канала с кликабельными ссылками
     channel_caption = f"👑 <b>THE ONE</b>\n\n"

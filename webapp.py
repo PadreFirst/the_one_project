@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 from database import get_game_state_sync, get_hall_of_fame_sync
@@ -74,9 +74,10 @@ def api_current():
 @app.route('/api/hall-of-fame', methods=['GET'])
 @rate_limit(max_requests=60, window=60)
 def api_hall_of_fame():
-    """API: Получить топ-10 самых дорогих покупок"""
+    """API: Получить топ-N самых дорогих покупок"""
     try:
-        hall = get_hall_of_fame_sync(limit=10)
+        limit = int(request.args.get('limit', 10))
+        hall = get_hall_of_fame_sync(limit=limit)
         return jsonify({
             "success": True,
             "data": hall

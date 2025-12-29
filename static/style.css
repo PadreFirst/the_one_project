@@ -85,11 +85,11 @@ body {
     display: inline-block;
     background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #b8860b 100%);
     color: #000;
-    font-size: 0.7em;
+    font-size: 0.65em;
     font-weight: 800;
-    padding: 5px 12px;
+    padding: 4px 10px;
     border-radius: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     letter-spacing: 1px;
     box-shadow: 
         0 2px 8px rgba(218, 165, 32, 0.5),
@@ -100,14 +100,14 @@ body {
 /* ФОТО: Фиксированная высота, ширина auto */
 .king-photo {
     width: 100%;
-    height: 280px; /* Фиксированная высота */
+    height: 240px; /* Уменьшенная высота */
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     border: 1px solid rgba(218, 165, 32, 0.3);
     box-shadow: 
         0 2px 15px rgba(0,0,0,0.8),
@@ -133,29 +133,29 @@ body {
 
 /* Info - КОМПАКТНАЯ */
 .king-info {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .king-name {
-    font-size: 1em;
+    font-size: 0.95em;
     font-weight: 700;
     color: #ffd700;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     text-shadow: 0 1px 4px rgba(255, 215, 0, 0.4);
 }
 
 .king-caption {
-    font-size: 0.85em;
+    font-size: 0.8em;
     color: #ccc;
     font-style: italic;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     line-height: 1.3;
 }
 
 /* Price - КОМПАКТНАЯ */
 .price-display {
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .price-main {
@@ -163,7 +163,7 @@ body {
 }
 
 .price-value {
-    font-size: 1.8em;
+    font-size: 1.6em;
     font-weight: 900;
     color: #ffd700;
     text-shadow: 
@@ -172,11 +172,11 @@ body {
     letter-spacing: 1px;
 }
 
-.price-currency {
-    font-size: 1em;
+.price-label {
+    font-size: 0.9em;
     font-weight: 600;
     color: #daa520;
-    margin-left: 4px;
+    margin-left: 6px;
 }
 
 .price-usd {
@@ -263,12 +263,10 @@ body {
 /* Hall of Fame - КОМПАКТНАЯ */
 .hall-section {
     padding: 0 10px 15px;
-    max-height: 350px;
-    overflow-y: auto;
 }
 
 .section-title {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 800;
     margin-bottom: 10px;
     text-align: center;
@@ -278,6 +276,27 @@ body {
         0 2px 6px rgba(255, 215, 0, 0.4);
     letter-spacing: 1px;
     text-transform: uppercase;
+}
+
+.channel-link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(218, 165, 32, 0.1);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    border-radius: 6px;
+    color: #ffd700;
+    text-decoration: none;
+    font-size: 0.85em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.channel-link:hover {
+    background: rgba(218, 165, 32, 0.2);
+    border-color: rgba(218, 165, 32, 0.5);
+    transform: translateY(-2px);
 }
 
 .hall-list {
@@ -399,110 +418,98 @@ body {
     background-size: 1000px 100%;
 }
 
-/* Multiplier Section */
-.multiplier-section {
-    margin-top: 12px;
-}
-
-.multiplier-title {
-    text-align: center;
-    font-size: 0.85em;
-    color: #daa520;
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-.multiplier-buttons {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.multiplier-btn {
-    background: linear-gradient(145deg, rgba(30,30,30,1) 0%, rgba(15,15,15,1) 100%);
-    border: 2px solid rgba(218, 165, 32, 0.3);
-    border-radius: 8px;
-    padding: 12px 8px;
+/* Main CTA Button */
+.cta-btn-main {
+    width: 100%;
+    background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #b8860b 100%);
+    color: #000;
+    border: none;
+    padding: 14px 20px;
+    font-size: 0.95em;
+    font-weight: 800;
+    border-radius: 6px;
     cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 
+        0 4px 15px rgba(218, 165, 32, 0.6),
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
     transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+    margin-bottom: 8px;
 }
 
-.multiplier-btn:hover {
-    border-color: rgba(218, 165, 32, 0.6);
+.cta-btn-main:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+    box-shadow: 
+        0 6px 20px rgba(218, 165, 32, 0.8),
+        inset 0 1px 0 rgba(255,255,255,0.4);
 }
 
-.multiplier-btn:active {
+.cta-btn-main:active {
     transform: translateY(0);
 }
 
-.multiplier-1x {
-    border-color: rgba(218, 165, 32, 0.4);
-}
-
-.multiplier-10x {
-    border-color: rgba(255, 140, 0, 0.4);
-}
-
-.multiplier-100x {
-    border-color: rgba(138, 43, 226, 0.4);
-}
-
-.multiplier-1x:hover {
-    border-color: rgba(218, 165, 32, 0.8);
-}
-
-.multiplier-10x:hover {
-    border-color: rgba(255, 140, 0, 0.8);
-}
-
-.multiplier-100x:hover {
-    border-color: rgba(138, 43, 226, 0.8);
-}
-
-.mult-icon {
-    font-size: 1.5em;
+/* Compact Multipliers */
+.multiplier-compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
 .mult-label {
-    font-size: 0.85em;
-    font-weight: 700;
-    color: #ffd700;
-}
-
-.mult-price {
     font-size: 0.75em;
-    color: #aaa;
+    color: #888;
 }
 
-.share-btn-full {
-    width: 100%;
+.mult-btn-compact {
     background: rgba(218, 165, 32, 0.15);
     border: 1px solid rgba(218, 165, 32, 0.4);
     color: #ffd700;
-    border-radius: 6px;
-    padding: 12px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mult-btn-compact:hover {
+    background: rgba(218, 165, 32, 0.25);
+    border-color: rgba(218, 165, 32, 0.6);
+    transform: scale(1.05);
+}
+
+.mult-btn-compact:active {
+    transform: scale(0.98);
+}
+
+/* Share Button Compact */
+.share-btn-compact {
+    width: 100%;
+    background: rgba(218, 165, 32, 0.1);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    color: #ffd700;
+    border-radius: 4px;
+    padding: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     transition: all 0.2s ease;
-    font-weight: 600;
-    font-size: 0.9em;
+    font-size: 0.8em;
+    font-weight: 500;
 }
 
-.share-btn-full:hover {
-    background: rgba(218, 165, 32, 0.25);
-    border-color: rgba(218, 165, 32, 0.6);
+.share-btn-compact:hover {
+    background: rgba(218, 165, 32, 0.2);
+    border-color: rgba(218, 165, 32, 0.5);
 }
 
-.share-btn-full:active {
+.share-btn-compact:active {
     transform: scale(0.98);
 }
 
@@ -513,24 +520,15 @@ body {
     }
     
     .king-photo {
-        height: 240px;
+        height: 200px;
     }
     
     .price-value {
-        font-size: 1.5em;
+        font-size: 1.4em;
     }
     
-    .dethrone-btn {
+    .cta-btn-main {
         padding: 12px 16px;
         font-size: 0.85em;
-    }
-    
-    .multiplier-buttons {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-    }
-    
-    .multiplier-btn {
-        padding: 10px 6px;
     }
 }

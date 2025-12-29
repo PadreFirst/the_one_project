@@ -134,7 +134,7 @@ function displayHallOfFame(data) {
     container.innerHTML = html;
 }
 
-// Multiplier button handlers
+// Button handlers
 document.getElementById('buyBtn1x').addEventListener('click', () => {
     if (!currentKingData) {
         tg.showAlert('Loading data, please wait...');
