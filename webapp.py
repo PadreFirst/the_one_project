@@ -50,11 +50,12 @@ def index():
 def api_current():
     """API: Получить текущего короля и цену"""
     try:
+        import math
         state = get_game_state_sync()
         
-        # Рассчитываем "симулированную" цену для UI (растет на 10%)
-        # Но реальная оплата всегда 1 XTR в тестовом режиме
-        simulated_price = state['current_price']
+        # Вычисляем следующую цену для покупателя (предыдущая + 10% с округлением вверх)
+        last_paid_price = state['current_price']
+        next_price = math.ceil(last_paid_price * 1.1)
         
         return jsonify({
             "success": True,
@@ -63,9 +64,9 @@ def api_current():
                 "user_link": state['user_link'],
                 "photo_id": state['photo_id'],
                 "text": state['text'],  # Текст пользователя (до 40 символов)
-                "simulated_price": simulated_price,  # Показываем в UI
+                "simulated_price": next_price,  # Показываем цену для следующего покупателя
                 "real_payment_price": 1,  # Реальная цена для оплаты (тестовый режим)
-                "usd_estimate": round(simulated_price * 0.013, 2)  # 1 XTR ≈ $0.013
+                "usd_estimate": round(next_price * 0.013, 2)  # 1 XTR ≈ $0.013
             }
         })
     except Exception as e:
