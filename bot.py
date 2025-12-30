@@ -19,6 +19,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://your-ngrok-url.ngrok.io")  # URL твоего Mini App
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")  # Админ пароль
+ADMIN_ID = 114776357  # Твой Telegram ID для уведомлений
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -219,6 +220,21 @@ async def process_photo(message: Message, state: FSMContext):
     
     if not is_allowed:
         await msg.delete() # Remove "Checking..." message
+        
+        # Если ошибка с API ключом - уведомить админа
+        if "403" in reason or "leaked" in reason.lower() or "api key" in reason.lower():
+            try:
+                await bot.send_message(
+                    ADMIN_ID,
+                    f"🚨 <b>CRITICAL: Google API Error!</b>\n\n"
+                    f"Error: {reason}\n\n"
+                    f"User ID: {message.from_user.id}\n"
+                    f"Check your API key at https://aistudio.google.com/",
+                    parse_mode="HTML"
+                )
+            except:
+                pass  # Не критично если не отправится
+        
         await message.answer(
             f"❌ <b>Submission Rejected</b>\n\n"
             f"Reason: {reason}\n\n"
