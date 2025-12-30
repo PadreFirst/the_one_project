@@ -46,7 +46,10 @@ async def cmd_start(message: Message):
     
     state = await get_game_state()
     # state = (current_price, current_king_id, photo_id, text, user_link)
-    price = state[0]
+    last_paid_price = state[0]
+    
+    # Вычисляем следующую цену для нового покупателя (предыдущая + 10%)
+    next_price = math.ceil(last_paid_price * 1.1)
     
     # Создаем кнопку для открытия Mini App
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -57,7 +60,7 @@ async def cmd_start(message: Message):
     await message.answer(
         f"<b>THE WORLD'S FRAME</b>\n\n"
         f"One photo. One message. Only ONE person in the world.\n\n"
-        f"Current throne price: <b>{price} ⭐ Stars</b>\n\n"
+        f"Current throne price: <b>{next_price} ⭐ Stars</b>\n\n"
         f"Can you take their place?",
         parse_mode="HTML",
         reply_markup=keyboard
@@ -73,11 +76,14 @@ async def cmd_buy(message: Message):
     ])
     
     state = await get_game_state()
-    price = state[0]
+    last_paid_price = state[0]
+    
+    # Вычисляем следующую цену для нового покупателя (предыдущая + 10%)
+    next_price = math.ceil(last_paid_price * 1.1)
     
     await message.answer(
         f"<b>Choose Your Entry</b>\n\n"
-        f"Current base price: {price} ⭐\n\n"
+        f"Current base price: {next_price} ⭐\n\n"
         f"🎯 <b>Multipliers:</b>\n"
         f"• <b>1x</b> - Standard entry\n"
         f"• <b>10x</b> - Boost visibility\n"
@@ -91,15 +97,18 @@ async def cmd_buy(message: Message):
 async def send_invoice_with_multiplier(message: Message, multiplier: int):
     """Отправляет invoice с указанным множителем"""
     state = await get_game_state()
-    base_price = state[0]
+    last_paid_price = state[0]
+    
+    # Вычисляем следующую базовую цену (предыдущая + 10%)
+    next_base_price = math.ceil(last_paid_price * 1.1)
     
     # Вычисляем финальную цену с множителем
-    final_price = base_price * multiplier
+    final_price = next_base_price * multiplier
     
     await bot.send_invoice(
         chat_id=message.from_user.id if hasattr(message, 'from_user') else message.chat.id,
         title=f"The World's Frame ({multiplier}x)",
-        description=f"Become THE ONE. Base: {base_price} ⭐ × {multiplier} = {final_price} ⭐",
+        description=f"Become THE ONE. Base: {next_base_price} ⭐ × {multiplier} = {final_price} ⭐",
         payload=f"king_buy_{multiplier}",
         currency="XTR",
         prices=[LabeledPrice(label=f"Throne Access {multiplier}x", amount=final_price)],
@@ -230,11 +239,7 @@ async def process_photo(message: Message, state: FSMContext):
     else:
         user_link = "Anonymous"  # Анонимный пользователь
     
-    # Вычисляем новую цену: текущая * 1.1 с округлением вверх
-    next_price = math.ceil(paid_amount * 1.1)
-    
-    # Сохраняем в БД: current_price = то что заплатил пользователь (для Hall of Fame)
-    # А следующий King увидит next_price как базовую цену
+    # Сохраняем в БД то что реально заплатил пользователь (для Hall of Fame)
     await update_game_state(
         user_id=message.from_user.id,
         photo_id=file_id,
@@ -242,10 +247,6 @@ async def process_photo(message: Message, state: FSMContext):
         user_link=user_link,
         new_price=paid_amount  # Сохраняем то, что реально заплатили
     )
-    
-    # Обновляем базовую цену для следующего покупателя
-    from database import set_base_price
-    await set_base_price(next_price)
     
     # Формируем caption для канала с кликабельными ссылками
     channel_caption = f"👑 <b>THE ONE</b>\n\n"
